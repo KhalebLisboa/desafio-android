@@ -17,11 +17,6 @@ import javax.inject.Inject
 class ContactViewModel @Inject constructor(
     private val getContactsUseCase: GetContactsUseCase
 ) : ViewModel() {
-    init {
-        viewModelScope.launch {
-            getContactsUseCase.fetchContacts()
-        }
-    }
 
     private val _state = MutableStateFlow<ContactState>(ContactState.Loading)
     val state: StateFlow<ContactState> = _state.asStateFlow()
@@ -46,5 +41,9 @@ class ContactViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    init {
+        loadContacts()
     }
 }

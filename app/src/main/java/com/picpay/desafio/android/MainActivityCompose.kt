@@ -35,6 +35,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -70,16 +71,14 @@ class MainActivityCompose : ComponentActivity() {
 fun ContactsScreen(viewModel: ContactViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsState()
 
-    LaunchedEffect(true) {
-        viewModel.handleIntent(ContactIntent.LoadContacts)
-    }
-
     Column(
         modifier = Modifier.padding(WindowInsets.systemBars.asPaddingValues())
     ) {
-        Text("Contatos",
+        Text(
+            "Contatos",
             style = TextStyle(fontSize = 28.sp, color = Color.White, fontWeight = FontWeight.Bold),
-            modifier = Modifier.padding(top = 48.dp, start = 24.dp))
+            modifier = Modifier.padding(top = 48.dp, start = 24.dp)
+        )
         ContactList(state) {
             viewModel.handleIntent(ContactIntent.LoadContacts)
         }
@@ -90,7 +89,9 @@ fun ContactsScreen(viewModel: ContactViewModel = hiltViewModel()) {
 fun ContactList(state: ContactState, onClick: () -> Unit) {
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.background(colorResource(R.color.colorPrimaryDark)).fillMaxWidth()
+        modifier = Modifier
+            .background(colorResource(R.color.colorPrimaryDark))
+            .fillMaxWidth()
     ) {
         when (state) {
             is ContactState.Success -> {
@@ -103,10 +104,17 @@ fun ContactList(state: ContactState, onClick: () -> Unit) {
                     }
                 }
             }
-
+            is ContactState.Error -> {
+                ErrorStateMessage(state.message) {
+                    onClick()
+                }
+            }
             else -> {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(60.dp).padding(top = 24.dp)
+                    modifier = Modifier
+                        .size(60.dp)
+                        .padding(top = 24.dp),
+                    color = colorResource(R.color.colorAccent)
                 )
             }
         }
@@ -144,10 +152,25 @@ fun ContactItem(user: User, onClick: () -> Unit) {
     }
 }
 
+@Composable
+fun ErrorStateMessage(message: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 24.dp)
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(message, style = TextStyle(color = Color.White))
+
+    }
+
+}
+
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     DesafioandroidTheme {
-//        ContactItem("User")
+        ErrorStateMessage("Não foi possível concluir") {}
     }
 }

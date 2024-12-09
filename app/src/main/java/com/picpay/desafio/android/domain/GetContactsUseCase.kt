@@ -9,8 +9,6 @@ import javax.inject.Inject
 class GetContactsUseCase @Inject constructor(private val repository: ContactsRepository) :
     UseCase<List<User>>() {
 
-    override suspend fun execute(): Flow<List<User>> = repository.getContacts()
-
-    suspend fun fetchContacts() = repository.fetchContacts()
+    override suspend fun execute(): Flow<List<User>> = repository.fetchContacts()
 
 }
