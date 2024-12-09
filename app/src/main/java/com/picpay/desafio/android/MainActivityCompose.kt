@@ -24,18 +24,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -97,7 +96,7 @@ fun ContactList(state: ContactState, onClick: () -> Unit) {
             is ContactState.Success -> {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.padding(top = 24.dp)
+                    modifier = Modifier.padding(top = 24.dp).testTag("CONTACTS_LIST")
                 ) {
                     items(state.data) { user ->
                         ContactItem(user, onClick)
@@ -158,7 +157,8 @@ fun ErrorStateMessage(message: String, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .padding(top = 24.dp)
-            .clickable { onClick() },
+            .clickable { onClick() }
+            .testTag("ERROR_MESSAGE"),
         contentAlignment = Alignment.Center
     ) {
         Text(message, style = TextStyle(color = Color.White))
