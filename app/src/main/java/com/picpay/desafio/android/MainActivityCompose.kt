@@ -5,13 +5,19 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -24,21 +30,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
 import coil.compose.AsyncImage
 import com.picpay.desafio.android.data.model.User
 import com.picpay.desafio.android.ui.mvi.ContactIntent
 import com.picpay.desafio.android.ui.mvi.ContactState
 import com.picpay.desafio.android.ui.mvi.ContactViewModel
 import com.picpay.desafio.android.ui.theme.DesafioandroidTheme
-import dagger.hilt.EntryPoint
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.lifecycle.HiltViewModel
 
 @AndroidEntryPoint
 class MainActivityCompose : ComponentActivity() {
@@ -47,34 +54,67 @@ class MainActivityCompose : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DesafioandroidTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(colorResource(R.color.colorPrimaryDark))
+                ) {
                     ContactsScreen()
+                }
             }
         }
     }
 }
 
 @Composable
-fun ContactsScreen(viewModel: ContactViewModel = hiltViewModel()){
+fun ContactsScreen(viewModel: ContactViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsState()
 
     LaunchedEffect(true) {
         viewModel.handleIntent(ContactIntent.LoadContacts)
     }
 
-    if (state is ContactState.Success) {
-        LazyColumn {
-            items((state as ContactState.Success).data){ user ->
-                ContactItem(user)
-
-            }
+    Column(
+        modifier = Modifier.padding(WindowInsets.systemBars.asPaddingValues())
+    ) {
+        Text("Contatos",
+            style = TextStyle(fontSize = 28.sp, color = Color.White, fontWeight = FontWeight.Bold),
+            modifier = Modifier.padding(top = 48.dp, start = 24.dp))
+        ContactList(state) {
+            viewModel.handleIntent(ContactIntent.LoadContacts)
         }
-    } else{
-        CircularProgressIndicator()
     }
 }
 
 @Composable
-fun ContactItem(user: User) {
+fun ContactList(state: ContactState, onClick: () -> Unit) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.background(colorResource(R.color.colorPrimaryDark)).fillMaxWidth()
+    ) {
+        when (state) {
+            is ContactState.Success -> {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.padding(top = 24.dp)
+                ) {
+                    items(state.data) { user ->
+                        ContactItem(user, onClick)
+                    }
+                }
+            }
+
+            else -> {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(60.dp).padding(top = 24.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ContactItem(user: User, onClick: () -> Unit) {
     Row(
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically,
@@ -82,6 +122,8 @@ fun ContactItem(user: User) {
             .fillMaxWidth()
             .background(colorResource(R.color.colorPrimaryDark))
             .height(64.dp)
+            .padding(start = 24.dp)
+            .clickable { onClick() }
     ) {
         AsyncImage(
             model = user.img,
@@ -89,26 +131,17 @@ fun ContactItem(user: User) {
             placeholder = painterResource(R.drawable.ic_round_account_circle),
             modifier = Modifier
                 .clip(CircleShape)
-                .size(62.dp)
-                .padding(vertical = 12.dp)
-                .padding(start = 24.dp)
+                .size(52.dp)
+
         )
 
         Column(
             modifier = Modifier.padding(start = 16.dp)
-        ){
-            Text("${user.username}")
-            Text("${user.name}")
+        ) {
+            Text("${user.username}", style = TextStyle(color = Color.White))
+            Text("${user.name}", style = TextStyle(color = colorResource(R.color.colorDetail)))
         }
     }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
 }
 
 @Preview(showBackground = true)
